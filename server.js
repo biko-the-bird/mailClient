@@ -3,10 +3,11 @@ const bodyParser = require('body-parser');
 var multer  = require('multer')
 var upload = multer({ dest: 'public/uploads' })
 var mailgun = require('mailgun-js');
+
 const mg = mailgun({apiKey: API_KEY, domain: DOMAIN});
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 var fs = require('fs');
 var path = require('path')
@@ -24,6 +25,9 @@ var storage = multer.diskStorage({
 	}
 })
 
+console.log(__dirname);
+app.use( express.static( `${__dirname}/client/build` ) );
+
 app.post('/api/form', upload.single('attachment'), (req, res) => {
   console.log("sending mail to" ,req.body, req.at);
   var filepath = path.join(__dirname, `uploads/${req.body.fileName}`);
@@ -31,7 +35,7 @@ app.post('/api/form', upload.single('attachment'), (req, res) => {
     const data = {
       from: 'Excited User <me@samples.mailgun.org>',
       to: req.body.recipient,
-      subject: 'Hello',
+      subject: req.body.subject,
       text: req.body.message,
       attachment: filepath
     };
